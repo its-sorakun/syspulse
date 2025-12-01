@@ -1,0 +1,23 @@
+# Build artifacts
+bin/
+build/
+*.exe
+*.obj
+*.o
+*.pdb
+*.ilk
+
+# Python bytecode & environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# IDE & OS metadata
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Automation scripts
+run_git.py
