@@ -1,0 +1,178 @@
+<!--
+Implementation details:
+Semantic HTML5 user interface for the SysPulse personal hardware monitoring dashboard.
+Provides responsive containers for SVG circular load gauges, 60fps HTML5 Canvas rolling
+telemetry charts, memory capacity bars, and thermal alert status badges.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#16161e">
+    <title>SysPulse ~ Hardware Vitals Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="dashboard-wrapper">
+        <!-- Top Status Bar -->
+        <header id="top-bar">
+            <div class="brand-group">
+                <span class="pulse-indicator live" id="live-dot" title="Live Polling Active"></span>
+                <span class="brand-title">SysPulse</span>
+                <span class="brand-badge" id="source-badge">Native Daemon</span>
+            </div>
+            <div class="system-summary">
+                <div class="summary-chip" id="chip-uptime">Uptime: <span id="uptime-val">00:00:00</span></div>
+                <div class="summary-chip" id="chip-processes">Processes: <span id="procs-val">--</span></div>
+                <button id="fullscreen-btn" class="icon-btn" title="Toggle Fullscreen">⛶</button>
+            </div>
+        </header>
+
+        <!-- Main Metrics Grid -->
+        <main id="metrics-grid">
+            <!-- CPU Primary Card -->
+            <section class="metric-card" id="card-cpu">
+                <div class="card-header">
+                    <span class="card-title">Central Processing Unit</span>
+                    <span class="thermal-tag normal" id="cpu-temp-tag">-- °C</span>
+                </div>
+                <div class="card-body gauge-row">
+                    <div class="radial-gauge-container">
+                        <svg class="radial-gauge-svg" viewBox="0 0 120 120">
+                            <circle class="radial-track" cx="60" cy="60" r="48"></circle>
+                            <circle class="radial-progress cyan" id="cpu-gauge-circle" cx="60" cy="60" r="48"></circle>
+                        </svg>
+                        <div class="gauge-center-text">
+                            <span class="gauge-value" id="cpu-val">0.0</span>
+                            <span class="gauge-unit">%</span>
+                        </div>
+                    </div>
+                    <div class="stats-column">
+                        <div class="stat-item">
+                            <span class="stat-label">Clock Freq</span>
+                            <span class="stat-value" id="cpu-freq-val">-- MHz</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Package Temp</span>
+                            <span class="stat-value" id="cpu-temp-val">--</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Core Load</span>
+                            <span class="stat-value highlight" id="cpu-load-state">Nominal</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- GPU Primary Card -->
+            <section class="metric-card" id="card-gpu">
+                <div class="card-header">
+                    <span class="card-title" id="gpu-name-tag">Graphics Processing Unit</span>
+                    <span class="thermal-tag normal" id="gpu-temp-tag">-- °C</span>
+                </div>
+                <div class="card-body gauge-row">
+                    <div class="radial-gauge-container">
+                        <svg class="radial-gauge-svg" viewBox="0 0 120 120">
+                            <circle class="radial-track" cx="60" cy="60" r="48"></circle>
+                            <circle class="radial-progress magenta" id="gpu-gauge-circle" cx="60" cy="60" r="48"></circle>
+                        </svg>
+                        <div class="gauge-center-text">
+                            <span class="gauge-value" id="gpu-val">0.0</span>
+                            <span class="gauge-unit">%</span>
+                        </div>
+                    </div>
+                    <div class="stats-column">
+                        <div class="stat-item">
+                            <span class="stat-label">VRAM Allocation</span>
+                            <span class="stat-value" id="vram-text">-- / -- GB</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Junction Temp</span>
+                            <span class="stat-value" id="gpu-temp-val">--</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">3D Engine</span>
+                            <span class="stat-value highlight" id="gpu-load-state">Idle</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Memory & System Storage Card -->
+            <section class="metric-card" id="card-memory">
+                <div class="card-header">
+                    <span class="card-title">Physical Memory & Storage</span>
+                    <span class="meta-tag" id="ram-pct-tag">0.0% Used</span>
+                </div>
+                <div class="card-body bars-column">
+                    <div class="capacity-block">
+                        <div class="capacity-labels">
+                            <span>System RAM (DDR4/DDR5)</span>
+                            <span id="ram-usage-text">-- / -- GB</span>
+                        </div>
+                        <div class="progress-bar-track">
+                            <div class="progress-bar-fill blue" id="ram-bar-fill" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="capacity-block">
+                        <div class="capacity-labels">
+                            <span>Dedicated Video RAM</span>
+                            <span id="vram-usage-text">-- / -- GB</span>
+                        </div>
+                        <div class="progress-bar-track">
+                            <div class="progress-bar-fill purple" id="vram-bar-fill" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="capacity-block">
+                        <div class="capacity-labels">
+                            <span>Primary System Volume (C:)</span>
+                            <span id="disk-c-text">NVMe SSD</span>
+                        </div>
+                        <div class="progress-bar-track">
+                            <div class="progress-bar-fill green" style="width: 42%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 60-Second Real-Time Utilization Graph -->
+            <section class="metric-card wide-card" id="card-load-graph">
+                <div class="card-header">
+                    <span class="card-title">Rolling Utilization History (Last 60 Seconds)</span>
+                    <div class="legend-row">
+                        <span class="legend-item"><span class="legend-dot cyan"></span> CPU Load</span>
+                        <span class="legend-item"><span class="legend-dot magenta"></span> GPU Load</span>
+                        <span class="legend-item"><span class="legend-dot blue"></span> RAM Used %</span>
+                    </div>
+                </div>
+                <div class="card-body chart-container">
+                    <canvas id="utilization-canvas"></canvas>
+                </div>
+            </section>
+
+            <!-- Thermal Junctions Graph -->
+            <section class="metric-card wide-card" id="card-thermal-graph">
+                <div class="card-header">
+                    <span class="card-title">Thermal Junction Trends (°C)</span>
+                    <div class="legend-row">
+                        <span class="legend-item"><span class="legend-dot amber"></span> CPU Core</span>
+                        <span class="legend-item"><span class="legend-dot red"></span> GPU Core</span>
+                        <span class="legend-threshold">Alert Threshold: 80°C</span>
+                    </div>
+                </div>
+                <div class="card-body chart-container">
+                    <canvas id="thermal-canvas"></canvas>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="gauges.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
