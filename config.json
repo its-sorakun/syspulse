@@ -1,0 +1,12 @@
+{
+  "host": "0.0.0.0",
+  "port": 8080,
+  "poll_interval_sec": 1.0,
+  "history_window_seconds": 60,
+  "thermal_thresholds": {
+    "warning": 75.0,
+    "critical": 85.0
+  },
+  "enable_gpu_probing": true,
+  "theme": "tokyo-night"
+}
